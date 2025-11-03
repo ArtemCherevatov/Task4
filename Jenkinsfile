@@ -9,14 +9,15 @@ pipeline {
             }
         }
         
-        stage('Build with Restore') {
+        stage('Build') {
             steps {
                 bat '''
+                    # MSBuild автоматично відновить пакети з параметром /restore
                     "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\MSBuild\\Current\\Bin\\MSBuild.exe" test_repos.sln ^
                     /p:Configuration=Debug ^
                     /p:Platform=x64 ^
                     /p:WindowsTargetPlatformVersion=10.0.19041.0 ^
-                    /t:Restore,Build
+                    /restore
                 '''
             }
         }
@@ -29,18 +30,6 @@ pipeline {
                 '''
                 junit 'x64/Debug/test_report.xml'
             }
-        }
-    }
-    
-    post {
-        always {
-            echo 'Build completed'
-        }
-        success {
-            echo 'Build and tests completed successfully!'
-        }
-        failure {
-            echo 'Build or tests failed!'
         }
     }
 }
