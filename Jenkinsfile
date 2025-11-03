@@ -9,21 +9,14 @@ pipeline {
             }
         }
         
-        stage('Restore NuGet Packages') {
-            steps {
-                bat '''
-                    "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\Common7\\IDE\\CommonExtensions\\Microsoft\\NuGet\\NuGet.exe" restore test_repos.sln
-                '''
-            }
-        }
-        
-        stage('Build') {
+        stage('Build with Restore') {
             steps {
                 bat '''
                     "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\MSBuild\\Current\\Bin\\MSBuild.exe" test_repos.sln ^
                     /p:Configuration=Debug ^
                     /p:Platform=x64 ^
-                    /p:WindowsTargetPlatformVersion=10.0.19041.0
+                    /p:WindowsTargetPlatformVersion=10.0.19041.0 ^
+                    /t:Restore,Build
                 '''
             }
         }
