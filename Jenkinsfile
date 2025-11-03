@@ -9,6 +9,14 @@ pipeline {
             }
         }
         
+        stage('Restore NuGet Packages') {
+            steps {
+                bat '''
+                    "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\Common7\\IDE\\CommonExtensions\\Microsoft\\NuGet\\NuGet.exe" restore test_repos.sln
+                '''
+            }
+        }
+        
         stage('Build') {
             steps {
                 bat '''
