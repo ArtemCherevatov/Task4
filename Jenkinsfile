@@ -6,14 +6,17 @@ pipeline {
             steps {
                 git branch: 'main',
                 url: 'https://github.com/ArtemCherevatov/Task4.git'
-                // credentialsId: 'github-access' - тимчасово вимкнути
             }
         }
         
         stage('Build') {
             steps {
-                // Використовуємо повний шлях до MSBuild
-                bat '"C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\MSBuild\\Current\\Bin\\MSBuild.exe" test_repos.sln /p:Configuration=Debug /p:Platform=x64'
+                bat '''
+                    "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\MSBuild\\Current\\Bin\\MSBuild.exe" test_repos.sln ^
+                    /p:Configuration=Debug ^
+                    /p:Platform=x64 ^
+                    /p:WindowsTargetPlatformVersion=10.0.19041.0
+                '''
             }
         }
         
@@ -23,7 +26,6 @@ pipeline {
                     cd x64\\Debug
                     test_repos.exe --gtest_output="xml:test_report.xml"
                 '''
-                // Використовуємо junit замість xUnit
                 junit 'x64/Debug/test_report.xml'
             }
         }
