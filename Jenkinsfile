@@ -1,37 +1,37 @@
 pipeline {
     agent any
-    tools {
-        msbuild 'MSBuild_Default'
-    }
+    
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                url: 'https://github.com/ArtemCherevatov/Task4.git',
-                credentialsId: 'github-access'
+                url: 'https://github.com/ArtemCherevatov/Task4.git'
+                // credentialsId: 'github-access' - тимчасово вимкнути
             }
         }
+        
         stage('Build') {
             steps {
-                bat 'msbuild test_repos.sln /p:Configuration=Debug /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0.19041.0'
+                // Використовуємо повний шлях до MSBuild
+                bat '"C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\MSBuild\\Current\\Bin\\MSBuild.exe" test_repos.sln /p:Configuration=Debug /p:Platform=x64'
             }
         }
+        
         stage('Test') {
             steps {
-                bat 'cd x64\\Debug && test_repos.exe --gtest_output=\"xml:test_report.xml\"'
+                bat '''
+                    cd x64\\Debug
+                    test_repos.exe --gtest_output="xml:test_report.xml"
+                '''
+                // Використовуємо junit замість xUnit
+                junit 'x64/Debug/test_report.xml'
             }
         }
     }
+    
     post {
         always {
-            // Додаємо дії в секцію always
-            echo 'Build completed - checking test results'
-            xunit (
-                [GoogleTest(
-                    pattern: 'x64/Debug/test_report.xml',
-                    skipIfNoTestFiles: true
-                )]
-            )
+            echo 'Build completed'
         }
         success {
             echo 'Build and tests completed successfully!'
