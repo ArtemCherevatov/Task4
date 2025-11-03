@@ -1,33 +1,43 @@
 pipeline {
     agent any
-
+    tools {
+        msbuild 'MSBuild_Default'
+    }
     stages {
         stage('Checkout') {
             steps {
-                git url: 'add here your url', credentialsId: 'add credentialsId'
+                git branch: 'main',
+                url: 'https://github.com/ArtemCherevatov/Task4.git',
+                credentialsId: 'github-access'
             }
         }
-        
         stage('Build') {
             steps {
-                // Крок для збірки проекту з Visual Studio
-                // Встановіть правильні шляхи до рішення/проекту та параметри MSBuild
-                bat '"path to MSBuild" test_repos.sln /t:Build /p:Configuration=Release'
+                bat 'msbuild test_repos.sln /p:Configuration=Debug /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0.19041.0'
             }
         }
-
         stage('Test') {
             steps {
-                // Команди для запуску тестів
-                bat "x64\\Debug\\test_repos.exe --gtest_output=xml:test_report.xml"
+                bat 'cd x64\\Debug && test_repos.exe --gtest_output=\"xml:test_report.xml\"'
             }
         }
     }
-
     post {
-    always {
-        // Publish test results using the junit step
-         // Specify the path to the XML test result files
+        always {
+            // Додаємо дії в секцію always
+            echo 'Build completed - checking test results'
+            xunit (
+                [GoogleTest(
+                    pattern: 'x64/Debug/test_report.xml',
+                    skipIfNoTestFiles: true
+                )]
+            )
+        }
+        success {
+            echo 'Build and tests completed successfully!'
+        }
+        failure {
+            echo 'Build or tests failed!'
+        }
     }
-}
 }
